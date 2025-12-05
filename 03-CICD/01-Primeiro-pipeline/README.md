@@ -37,10 +37,14 @@ eval $(ssh-agent -s)
 ssh-add -k /home/vscode/.ssh/gitlab
 git push origin master
 ```
-6. Vá até o gitlab, abra seu projeto `primeiro-projeto` e na lateral esquerda clique em `CI/CD` e após clique em `pipelines`
+6. Vá até o gitlab, abra seu projeto `primeiro-projeto` e na lateral esquerda clique em `Build` e após clique em `pipelines`
+
 ![](img/gitlab-1.png)
+
 7. Você verá o pipeline rodando como na imagem abaixo:
+   
    ![](img/gitlab-2.png)
+
 8. Clique no id da execução do pipeline para conseguir acessar todas as etapas e ler os logs das etapas
    ![](img/gitlab-3.png)
 9. Sinta-se a vontade para explorar as etapas.

@@ -32,11 +32,15 @@ source ~/venv/bin/activate
     ssh-keygen -t rsa -b 2048 -C "gitlab key" -f /home/vscode/.ssh/gitlab
    ```
    2. Pressione enter duas vezes para sinalizar que não quer senha para a chave
+   
    ![](img/gitlab-1.png)
+   
    3. Abre a parte publica da sua chave no IDE do Codespaces com o comando `code /home/vscode/.ssh/gitlab.pub` e copie o conteúdo para a área de transferência do seu computador.
    4. Acesse o link da configuração de chaves do seu gitlab: [Chaves Gitlab](https://gitlab.com/-/user_settings/ssh_keys)
    5. Cole o conteúdo copiado no campo destacado e clique em `Add New Key`
+   
    ![](img/gitlab-2.png)
+
    6. Devolta ao terminal do Codespaces exetuce os comandos abaixo para ativar a chave na sessão de terminal que esta utilizando:
    ```shell
     eval $(ssh-agent -s) 
@@ -44,7 +48,9 @@ source ~/venv/bin/activate
    ```
 6. Vamos criar um primeiro projeto no gitlab. Para isso acesse o [link](https://gitlab.com/projects/new). Clique em `Create Blank Projet`.
 7. De o nome de `primeiro-projeto` ao projeto. Marque como `Public` e desmarque a opção de inicializar com README. 
+   
    ![](img/gitlab-3.png)
+
 8. Clique em `Create project`
 9. De volta ao Codespaces você vai subir o código desse primeiro projeto no gitlab. Para isso siga os comandos abaixo tomando o cuidado com os pontos onde precisa colocar suas informações
 ```bash
@@ -52,42 +58,65 @@ git config --global user.name "SEU NOME"
 git config --global user.email "SEU EMAIL DO GITLAB"
 
 #Copia o código para outra pasta para que possa criar outro repo git
-cp -frv /home/ubuntu/environment/FIAP-CICD-DevSecOps/02-Ansible/01-provisionando-gitlab-runner/primeiro-projeto/ ~/environment/
+cp -frv /workspaces/FIAP-Platform-Engineering/02-Ansible/01-provisionando-gitlab-runner/primeiro-projeto/ ~/environment/
 
-cd /home/ubuntu/environment/primeiro-projeto
+cd /home/vscode/environment/primeiro-projeto
 
 git init
 git remote add origin git@gitlab.com:SEU-USUARIO/primeiro-projeto.git
 git add .
 git commit -m "Initial commit"
-git push -u origin master
+git branch -M master
+git push -uf origin master
 ```
 ![](img/gitlab-4.png)
+
 ![](img/gitlab-5.png)
 
 10. No seu repositório do gitlab clique em settings na lateral esquerda e então clique em `CI/CD`
+    
     ![](img/gitlab-6.png)
-11. Em `Runners` clique em `Expand`
+
+11. Em `Runners` clique para expandir
+    
     ![](img/gitlab-7.png)
-12. Desabilite a opção `Enable shared runners for this project` 
+
+12. Clique na aba instance e Desabilite a opção `Turn on instance runners for this project` para que o runner que vamos criar seja utilizado apenas por esse projeto.
+    
     ![](img/gitlab-8.png)
-13. Copie o token e mantenha na área de transferência. Clique nos três pontos ao lado de `New project runner` e copie.
+
+13. Clique em `Assigned project runners` e na sequencia clique em `Create project runner` para gerar o token que será utilizado para registrar o runner que vamos criar.
+    
     ![](img/gitlab-9.png)
-14. De volta ao Codespaces você vai colar o token do gitlab no arquivo ansible que registra o runner. Para tal execute o comando `code /workspaces/FIAP-Platform-Engineering/02-Ansible/01-provisionando-gitlab-runner/ansible-gitlab-runner/tasks/register-runner.yml` e altere a linha 48. Não esqueça de salvar.
-15. O runner do gitlab será uma EC2 que será provisionada com terraform. Para entrar na pasta com o código execute o comando `cd /workspaces/FIAP-Platform-Engineering/02-Ansible/01-provisionando-gitlab-runner/terraform-gitlab-runner/`
-16. Atualize o estado remoto do repositório para utilizar um bucket S3 disponivel na sua conta. Abra o arquivo com `code state.tf`
-17. Agora que já alterou o bucket e salvou. Execute o comando `terraform init`
-18. Verifique o que será criado com o comando `terraform plan`
-19. Execute o `terraform apply --auto-approve` para subir a maquina que será o runner. lembrando que esse script executa alguns comandos na maquina criada para preprar tudo para que o ansible consiga executar no host criado.
-20. Execute o comando `terraform output ec2_dns` para copiar o ip publico da instancia para a área de transferência.
+
+14. No campo de Tags adicione o valor `shell, terraform` e clique em `Create runner`.
+    
+    ![](img/gitlab-9-1.png)
+
+15. Copie o token gerado para a área de transferência do seu computador.
+    
+    ![](img/gitlab-9-2.png)
+
+15. De volta ao Codespaces você vai colar o token do gitlab no arquivo ansible que registra o runner. Para tal execute o comando `code /workspaces/FIAP-Platform-Engineering/02-Ansible/01-provisionando-gitlab-runner/ansible-gitlab-runner/tasks/register-runner.yml` e altere a linha 48. Não esqueça de salvar.
+16. O runner do gitlab será uma EC2 que será provisionada com terraform. Para entrar na pasta com o código execute o comando `cd /workspaces/FIAP-Platform-Engineering/02-Ansible/01-provisionando-gitlab-runner/terraform-gitlab-runner/`
+17. Atualize o estado remoto do repositório para utilizar um bucket S3 disponivel na sua conta. Abra o arquivo com `code state.tf`
+18. Agora que já alterou o bucket e salvou. Execute o comando `terraform init`
+19. Verifique o que será criado com o comando `terraform plan`
+20. Execute o `terraform apply --auto-approve` para subir a maquina que será o runner. lembrando que esse script executa alguns comandos na maquina criada para preprar tudo para que o ansible consiga executar no host criado.
+21. Execute o comando `terraform output ec2_dns` para copiar o ip publico da instancia para a área de transferência.
+    
     ![](img/gitlab-11.png)
-21. Agora entre na pasta onde vai executar o ansible. Para isso utilize o comando `cd /workspaces/FIAP-Platform-Engineering/02-Ansible/01-provisionando-gitlab-runner/ansible-gitlab-runner/`
-22. Utilize o comando `code hosts` para abrir o arquivo onde é configurado quais maquinas e como serão acessadas pelo ansible. Altere adicionando o IP publico da instancia criada no local indicado.
+
+22. Agora entre na pasta onde vai executar o ansible. Para isso utilize o comando `cd /workspaces/FIAP-Platform-Engineering/02-Ansible/01-provisionando-gitlab-runner/ansible-gitlab-runner/`
+23. Utilize o comando `code hosts` para abrir o arquivo onde é configurado quais maquinas e como serão acessadas pelo ansible. Altere adicionando o IP publico da instancia criada no local indicado.
+    
     ![](img/gitlab-12.png)
-23. Execute o comando abaixo para executar o ansible que vai configurar o EC2 como gitlab runner:
+
+24. Execute o comando abaixo para executar o ansible que vai configurar o EC2 como gitlab runner:
 ``` shell
 ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u 'ubuntu' -i hosts  --extra-vars 'gitlab_runner_name=gitlab-runner-fleet-001' play.yaml    
 ```
 ![](img/gitlab-14.png)
-22. Se voltar a mesma página do gitlab onde pegou o token notará que agora tem um runner registrado.
+25.  Se voltar a mesma página do gitlab onde pegou o token notará que agora tem um runner registrado.
+
 ![](img/gitlab-13.png)

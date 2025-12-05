@@ -1,27 +1,36 @@
 ---
 - name: Create gitlab-runner user
   user:
-    name: gitlab-runner
+    name: "{{ gitlab_runner_user }}"
     groups:
-     - root
-     - sudo
+      - root
+      - sudo
     state: present
-    shell: /bin/bash       
-    createhome: yes        
-    home: /home/gitlab-runner
+    shell: /bin/bash
+    createhome: yes
+    home: "/home/{{ gitlab_runner_user }}"
   register: user_created
-- name: Download GitLab Runner
-  get_url: url="https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64"
-           dest="/usr/local/bin/gitlab-runner"
-  when: user_created
-  register: runner_downloaded
-- name: Set permission to the gitlab runner
-  command: sudo chmod +x /usr/local/bin/gitlab-runner
 
-- name: install runner service
+- name: Download GitLab Runner
+  get_url:
+    url: "https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64"
+    dest: "/usr/local/bin/{{ gitlab_runner_executable }}"
+    mode: "0755"
+  register: runner_downloaded
+  when: user_created is defined and not user_created.failed
+
+- name: Set permission to the gitlab runner
+  file:
+    path: "/usr/local/bin/{{ gitlab_runner_executable }}"
+    mode: "0755"
+  when: runner_downloaded is defined and not runner_downloaded.failed
+
+- name: Install runner service
   command: "{{ gitlab_runner_executable }} install --user={{ gitlab_runner_user }} --working-directory=/home/{{ gitlab_runner_user }}"
-  when: runner_downloaded.changed
+  when: runner_downloaded is defined and runner_downloaded.changed
+
 - name: Set systemd reload options
   import_tasks: systemd-reload.yml
+
 - name: Start service runner
   command: "{{ gitlab_runner_executable }} start"
