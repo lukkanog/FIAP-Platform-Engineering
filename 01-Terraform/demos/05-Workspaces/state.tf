@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "lab-fiap-SUA TURMA-SEU RM"
+    bucket = "base-config-363689"
     key    = "workspaces"
     region = "us-east-1"
   }

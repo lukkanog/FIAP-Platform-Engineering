@@ -36,7 +36,7 @@ resource "random_shuffle" "random_subnet" {
 }
 
 resource "aws_elb" "web" {
-  name = "terraform-example-elb"
+  name = "${terraform.workspace}-elb"
 
   subnets         = data.aws_subnets.all.ids
   security_groups = ["${aws_security_group.allow-ssh.id}"]
@@ -64,14 +64,14 @@ resource "aws_instance" "web" {
   instance_type = "t3.micro"
   ami           = "${lookup(var.aws_amis, var.aws_region)}"
 
-  count = 3
+  count = var.quantidade_nodes
 
   subnet_id              = "${random_shuffle.random_subnet.result[0]}"
   vpc_security_group_ids = ["${aws_security_group.allow-ssh.id}"]
   key_name               = "${var.KEY_NAME}"
 
   provisioner "file" {
-    source      = "script.sh"
+    source      = "${path.module}/script.sh"
     destination = "/tmp/script.sh"
   }
 
@@ -89,6 +89,6 @@ resource "aws_instance" "web" {
   }
 
   tags = {
-    Name = "${format("nginx-%03d", count.index + 1)}"
+    Name = "nginx-${terraform.workspace}_${count.index + 1}"
   }
 }
